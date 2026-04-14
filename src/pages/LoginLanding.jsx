@@ -34,7 +34,7 @@ const LoginLanding = () => {
                                 {/* <option.icon className="w-6 h-6 text-blue-500" /> */}
                                 <div className="relative z-10 flex items-center justify-between gap-4 sm:gap-5">
                                     <h3 className="text-lg text-slate-800 group-hover:text-indigo-600 mb-1 transition-colors">{option.title}</h3>
-                                    <ArrowRightIcon className="w-4 h-4 text-slate-400 group-hover:text-indigo-600group-hover:translate-x-1 transition-all duration-300" />
+                                    <ArrowRightIcon className="w-4 h-4 text-slate-400 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all duration-300" />
                                 </div>
                             </Link>
                         ))}
