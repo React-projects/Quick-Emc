@@ -17,8 +17,8 @@ const App = () => {
             <Toaster />
             <Routes>
                 <Route path="/login" element={<LoginLanding />} />
-                <Route path="/login/admin" element={<LoginForm role="admin" title="Admin Portal" subtitel="sign in to manage organization" />} />
-                <Route path="/login/employee" element={<LoginForm role="employee" title="Employee Portal" subtitel="sign in to access your account" />} />
+                <Route path="/login/admin" element={<LoginForm role="admin" title="Admin Portal" subtitle="sign in to manage organization" />} />
+                <Route path="/login/employee" element={<LoginForm role="employee" title="Employee Portal" subtitle="sign in to access your account" />} />
                 <Route element={<Layout />}>
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/leave" element={<Leave />} />
