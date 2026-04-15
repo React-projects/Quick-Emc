@@ -24,7 +24,7 @@ const LoginForm = ({ role, title, subtitle }) => {
                         <ArrowLeftIcon size={16} /> Back to portals
                     </Link>
                     <div className="mb-8">
-                        <h1 className="text-2xl sm:text-3xL font-medium text-zinc-800">{title}</h1>
+                        <h1 className="text-2xl sm:text-3xl font-medium text-zinc-800">{title}</h1>
                         <p className="text-slate-500 text-sm sm:text-base mt-2">{subtitle}</p>
                     </div>
                     {error && (
@@ -61,6 +61,7 @@ const LoginForm = ({ role, title, subtitle }) => {
                                         required
                                         placeholder="enter Password"
                                         aria-label="Password"
+                                        aria-pressed={showPassword}
                                     />
                                     <button
                                         type="button"
