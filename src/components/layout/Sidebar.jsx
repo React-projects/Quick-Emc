@@ -18,21 +18,21 @@ const Sidebar = () => {
 
     const naveItems = [
         { name: 'Dashboard', path: '/dashboard', icon: LayoutGridIcon },
-        role === 'ADMIN' ? { name: 'Employees', path: '/employees', icon: UserIcon } : { name: 'Attendance', path: '/attendance', icon: Calendar1Icon },
+        role === 'ADMIN' ? { name: 'Employees', path: '/employee', icon: UserIcon } : { name: 'Attendance', path: '/attendance', icon: Calendar1Icon },
         { name: 'Leaves', path: '/leave', icon: FileTextIcon },
         { name: 'Payslips', path: '/payslips', icon: DollarSignIcon },
         { name: 'Settings', path: '/settings', icon: SettingsIcon },
     ];
-    const handleLogOut =()=>{
-        window.location.href = '/login'
-    }
+    const handleLogOut = () => {
+        window.location.href = '/login';
+    };
     const sidebarContent = (
         <>
             {/* Brand header */}
             <div className='px-5 pt-6 pb-5 border-b border-white/6'>
                 <div className='flex items-center justify-between'>
                     <div className='flex items-center gap-3'>
-                        <UserIcon className='text-white size-7' />
+                        <UserIcon className='text-white size-7' aria-label='User profile' />
                         <div>
                             <p className='font-semibold text-[13px] text-white tracking-wide'>Employee MS</p>
                             <p className='text-[11px] text-slate-500 font-medium'>Management System</p>
@@ -61,14 +61,18 @@ const Sidebar = () => {
             )}
             {/* navigation label */}
             <div className='px-5 pt-5 pb-2'>
-                <p className='text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500'>Navigation</p>
+                <p className='text-[15px] font-semibold uppercase tracking-[0.12em] text-slate-500'>Navigation</p>
             </div>
             {/* navigation list */}
             <div className='flex-1 px-3 space-y-0.5 overflow-y-auto'>
-                {naveItems.map(item => {
+                {naveItems.map((item) => {
                     const isActive = pathname.startsWith(item.path);
                     return (
-                        <Link key={item.name} to={item.path} className={`group flex items-center gap-3 px-3 py-2.5 rounded-md text-[13px] font-medium transition-all duration-150 relative ${isActive ? 'bg-indigo-500/12 text-indigo-300' : 'text-salat-300 hove:text-white hover:bg-white/4'} `}>
+                        <Link
+                            key={item.name}
+                            to={item.path}
+                            className={`group flex items-center gap-3 px-3 py-2.5 rounded-md text-[13px] font-medium transition-all duration-150 relative ${isActive ? 'bg-indigo-500/12 text-indigo-300' : 'text-salat-300 hove:text-white hover:bg-white/4'} `}
+                        >
                             {isActive && <div className='absolute left-0 top-1/2  -translate-y-1/2 w-[3px] h-5  rounded-r-full bg-indigo-500' />}
                             <item.icon className={` w-[17px] h-[17px] shrink-0 ${isActive ? 'text-indigo-300' : 'text-slate-400 group-hover:text-slate-300'}`} />
                             <span className='flex'>{item.name}</span>
@@ -79,7 +83,11 @@ const Sidebar = () => {
             </div>
             {/* layout */}
             <div className='p-3 border-top border-white/6'>
-                <button onClick={handleLogOut} type='button' className='flex items-center gap-3 w-full px-3 py-2.5 rounded-md text-[13px] font-medium text-slate-400 hover:text-rose-400 hover:bg-rose-500/8 transition-all duration-150 cursor-pointer'>
+                <button
+                    onClick={handleLogOut}
+                    type='button'
+                    className='flex items-center gap-3 w-full px-3 py-2.5 rounded-md text-[13px] font-medium text-slate-400 hover:text-rose-400 hover:bg-rose-500/8 transition-all duration-150 cursor-pointer'
+                >
                     <LogOutIcon className='w-[17px] h-[17px]' />
                     <span>log out</span>
                 </button>
@@ -98,7 +106,9 @@ const Sidebar = () => {
             {/* sidebar desktop */}
             <aside className='hidden lg:flex flex-col h-full w-[260px] bg-linear-to-b from-slate-900 via-slate-900 to-slate-950 text-white shrink-0 border-r border-white/4'>{sidebarContent}</aside>
             {/* sidebar mobile */}
-            <aside className={`lg:hidden fixed inset-y-0 left-0 w-72 bg-linear-to-b from-slate-900 via-slate-900 to-slate-950 text-white z-50 flex flex-col transform transition-transform duration-300 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}></aside>
+            <aside
+                className={`lg:hidden fixed inset-y-0 left-0 w-72 bg-linear-to-b from-slate-900 via-slate-900 to-slate-950 text-white z-50 flex flex-col transform transition-transform duration-300 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}
+            ></aside>
         </>
     );
 };

@@ -16,19 +16,19 @@ const App = () => {
         <>
             <Toaster />
             <Routes>
-                <Route path="/login" element={<LoginLanding />} />
-                <Route path="/login/admin" element={<LoginForm role="admin" title="Admin Portal" subtitle="sign in to manage organization" />} />
-                <Route path="/login/employee" element={<LoginForm role="employee" title="Employee Portal" subtitle="sign in to access your account" />} />
+                <Route path='/login' element={<LoginLanding />} />
+                <Route path='/login/admin' element={<LoginForm role='admin' title='Admin Portal' subtitle='sign in to manage organization' />} />
+                <Route path='/login/employee' element={<LoginForm role='employee' title='Employee Portal' subtitle='sign in to access your account' />} />
                 <Route element={<Layout />}>
-                    <Route path="/dashboard" element={<Dashboard />} />
-                    <Route path="/leave" element={<Leave />} />
-                    <Route path="/employee" element={<Employs />} />
-                    <Route path="/Settings" element={<Settings />} />
-                    <Route path="/attendance" element={<Attendance />} />
-                    <Route path="/payslips" element={<Payslips />} />
+                    <Route path='/dashboard' element={<Dashboard />} />
+                    <Route path='/leave' element={<Leave />} />
+                    <Route path='/employee' element={<Employs />} />
+                    <Route path='/settings' element={<Settings />} />
+                    <Route path='/attendance' element={<Attendance />} />
+                    <Route path='/payslips' element={<Payslips />} />
                 </Route>
-                <Route path="print/payslips/:id" element={<PrintPayslips />} />
-                <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                <Route path='print/payslips/:id' element={<PrintPayslips />} />
+                <Route path='*' element={<Navigate to='/dashboard' replace />} />
             </Routes>
         </>
     );
