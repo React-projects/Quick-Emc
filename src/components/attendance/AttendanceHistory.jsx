@@ -38,7 +38,7 @@ function AttendanceHistory({ history }) {
                                         <td className='px-6 py-4 text-slate-600 font-medium'>{getWorkingHoursDisplay(record)}</td>
                                         <td className='px-6 py-4'>{dateType.label !== '_' ? <span className={`badge ${dateType.className}`}> {dateType.label}</span> : '_'}</td>
                                         <td className='px-6 py-4'>
-                                            <span className={` badge ${record.status === 'PRESENT' ? 'badge-success' : badge.status === 'LATE' ? 'badge-warning' : 'badge.danger'}`}>
+                                            <span className={` badge ${record.status === 'PRESENT' ? 'badge-success' : badge.status === 'LATE' ? 'badge-warning' : 'badge-danger'}`}>
                                                 {record.status}
                                             </span>
                                         </td>
