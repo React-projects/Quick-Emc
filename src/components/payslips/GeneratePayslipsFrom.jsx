@@ -20,7 +20,12 @@ const GeneratePayslipsFrom = ({ employees, onSuccess }) => {
     };
 
     return (
-        <div className='fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 P-4'>
+        <div
+            className='fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 P-4'
+            onClick={() => {
+                setIsOpen(false);
+            }}
+        >
             <div className='card max-w-lg w-full p-6 animate-slide-up'>
                 <div className='flex items-center justify-between mb-6'>
                     <h2 className='text-lg font-bold text-slate-900'>Generate Monthly Payslips</h2>
