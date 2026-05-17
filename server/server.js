@@ -1,12 +1,10 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-// import connectDB from './config/db.js';
-// import employeeRoutes from './routes/employeeRoutes.js';
-// import leaveRoutes from './routes/leaveRoutes.js';
 import multer from 'multer';
 import connectDB from './config/db.js';
-// import { get } from 'mongoose';
+import authRouter from './Routes/authRoutes.js';
+import employeeRouter from './Routes/employeeRoutes.js';
 
 const app = express();
 const port = process.env.PORT || 4000;
@@ -20,5 +18,7 @@ app.use(multer().none());
 app.get('/', (req, res) => {
     res.send('Server is running...');
 });
+app.use('/api/auth', authRouter);
+app.use('/api/employees', employeeRouter);
 await connectDB();
 app.listen(port, () => console.log(`Server is running on port ${port}`));

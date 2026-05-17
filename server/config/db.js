@@ -4,17 +4,17 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const connectDB = async () => {
+    console.log('Testing MongoDB Atlas connection...');
+    console.log('Connection string exists:', !!process.env.MONGODB_URL);
+
     try {
-        mongoose.connection.on('connected', () => {
-            console.log('MongoDB Connected');
+        await mongoose.connect(process.env.MONGODB_URL, {
+            serverSelectionTimeoutMS: 5000,
         });
-
-        const conn = await mongoose.connect(process.env.MONGODB_URL);
-
-        console.log(`MongoDB Connected: ${conn.connection.host}`);
+        console.log('✅ Connection successful!');
+        await mongoose.disconnect();
     } catch (error) {
-        console.log(error);
-        process.exit(1);
+        console.error('❌ Connection failed:', error.message);
     }
 };
 
