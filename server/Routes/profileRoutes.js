@@ -7,4 +7,4 @@ const profileRouter = Router();
 profileRouter.get('/', protect, getProfile);
 profileRouter.post('/', protect, updateProfile);
 
-export default employeeRouter;
+export default profileRouter;
