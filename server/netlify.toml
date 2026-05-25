@@ -1,0 +1,27 @@
+[build]
+  # Don't cd into client - let base directory handle it
+  command = "npm install && npm run build"
+  # This will be relative to base directory
+  publish = "dist"
+
+[build.environment]
+  # Optional: Set Node version
+  NODE_VERSION = "18"
+
+# Functions for your backend API
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+# Route API requests to your functions
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+  force = true
+
+# SPA fallback for client routing
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
