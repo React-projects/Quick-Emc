@@ -1,0 +1,30 @@
+[build]
+  # Build settings for your client
+  command = "cd client && npm install && npm run build"
+  publish = "client/dist"
+
+# Build plugins (equivalent to Vercel builds)
+[[plugins]]
+  package = "@netlify/plugin-nextjs"  # Only if using Next.js
+
+# Handle API routes (equivalent to Vercel's /api/(.*) -> server.js)
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+# Create a function from your server.js
+[functions."api"]
+  external_node_modules = ["express"]  # Add any dependencies
+
+# Routes configuration (equivalent to Vercel routes)
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/server/:splat"
+  status = 200
+  force = true
+
+# Serve static files from client/dist
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
