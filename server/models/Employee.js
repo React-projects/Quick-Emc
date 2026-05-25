@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { DEPARTMENTS } from '../constants/Departments.js';
+import { DEPARTMENTS } from '../constants/departments.js';
 const employeeSchema = new mongoose.Schema(
     {
         userId: {
