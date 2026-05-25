@@ -1,3 +1,4 @@
+import { inngest } from '../inngest/index.js';
 import Employee from '../models/Employee.js';
 import leaveApplication from '../models/leaveApplication.js';
 
@@ -28,6 +29,12 @@ export const createLeave = async (req, res) => {
         }
 
         const leave = await leaveApplication.create({ employeeId: employee._id, type, reason, startDate: new Date(startDate), endDate: new Date(endDate), status: 'PENDING' });
+        await inngest.send({
+            name: 'leave/pending',
+            data: {
+                leaveApplicationId: leave._id,
+            },
+        });
         return res.json({ success: true, data: leave });
     } catch (error) {
         res.status(500).json({ message: ' failed to create leave' });
