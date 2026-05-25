@@ -35,4 +35,4 @@ app.use('/api/dashboard', dashboardRouter);
 app.use('/api/inngest', serve({ client: inngest, functions }));
 
 await connectDB();
-app.listen(port, () => console.log(`Server is running on port ${port}`));
+// app.listen(port, () => console.log(`Server is running on port ${port}`));
