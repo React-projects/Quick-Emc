@@ -1,29 +1,26 @@
 [build]
-  # Build settings for your client
-  command = "cd client && npm install && npm run build"
-  publish = "client/dist"
+  # Don't cd into client - let base directory handle it
+  command = "npm install && npm run build"
+  # This will be relative to base directory
+  publish = "dist"
 
-# Build plugins (equivalent to Vercel builds)
-[[plugins]]
-  package = "@netlify/plugin-nextjs"  # Only if using Next.js
+[build.environment]
+  # Optional: Set Node version
+  NODE_VERSION = "18"
 
-# Handle API routes (equivalent to Vercel's /api/(.*) -> server.js)
+# Functions for your backend API
 [functions]
   directory = "netlify/functions"
   node_bundler = "esbuild"
 
-# Create a function from your server.js
-[functions."api"]
-  external_node_modules = ["express"]  # Add any dependencies
-
-# Routes configuration (equivalent to Vercel routes)
+# Route API requests to your functions
 [[redirects]]
   from = "/api/*"
-  to = "/.netlify/functions/server/:splat"
+  to = "/.netlify/functions/api/:splat"
   status = 200
   force = true
 
-# Serve static files from client/dist
+# SPA fallback for client routing
 [[redirects]]
   from = "/*"
   to = "/index.html"
