@@ -12,7 +12,7 @@ const connectDB = async () => {
             serverSelectionTimeoutMS: 5000,
         });
         console.log('✅ Connection successful!');
-        await mongoose.disconnect();
+        // await mongoose.disconnect();
     } catch (error) {
         console.error('❌ Connection failed:', error.message);
     }
