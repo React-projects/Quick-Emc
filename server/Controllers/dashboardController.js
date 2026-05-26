@@ -2,7 +2,7 @@ import Employee from '../models/Employee.js';
 import Attendees from '../models/Attendees.js';
 import LeaveApplication from '../models/leaveApplication.js';
 import bcrypt from 'bcrypt';
-import { DEPARTMENTS } from '../constants/Departments.js';
+import { DEPARTMENTS } from '../constants/departments.js';
 import Payslips from '../models/Payslips.js';
 // Get  dashboard for Employee and admin
 // GET /api/dashboard
