@@ -36,3 +36,6 @@ app.use('/api/inngest', serve({ client: inngest, functions }));
 
 await connectDB();
 // app.listen(port, () => console.log(`Server is running on port ${port}`));
+
+// Export app for Vercel
+export default app;
