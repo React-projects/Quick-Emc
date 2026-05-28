@@ -5,7 +5,7 @@ import jwt from 'jsonwebtoken';
 // post /api/auth/login
 export const login = async (req, res) => {
     try {
-        const { email, password, role } = req.body;
+        const { email, password, role = {} } = req.body;
         if (!email || !password) {
             return res.status(400).json({ message: 'email, password  are required' });
         }
