@@ -1,22 +1,34 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { dummyLeaveData } from '../assets/assets';
 import Loading from '../components/layout/Loading';
 import { PalmtreeIcon, PlusIcon, ThermometerIcon, UmbrellaIcon } from 'lucide-react';
 import LeaveHistory from '../components/leave/LeaveHistory';
 import ApplyModal from '../components/leave/ApplyModal';
+import { useAuth } from '../context/AuthContext';
+import api from '../api/axios';
+import toast from 'react-hot-toast';
 
 const Leave = () => {
     const [leaves, setLeaves] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [isDeleted, setIsDeleted] = useState(false);
-    const isAdmin = false;
-    const fetchLeaves = () => {
-        setLeaves(dummyLeaveData);
-        setTimeout(() => {
+    const { user } = useAuth();
+    const isAdmin = user?.role === 'ADMIN';
+    const fetchLeaves = useCallback(async () => {
+        try {
+            const response = await api.get('/leave');
+            // Handle both admin (direct array) and employee (wrapped in .data) responses
+            const leaveData = Array.isArray(response.data) ? response.data : response.data.data || [];
+            setLeaves(leaveData);
+            if (response.data.employee?.isDeleted) setIsDeleted(true);
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Failed to fetch leave data');
+            setLeaves([]);
+        } finally {
             setLoading(false);
-        }, 1000);
-    };
+        }
+    }, []);
     useEffect(() => {
         fetchLeaves();
     }, [fetchLeaves]);
@@ -24,16 +36,16 @@ const Leave = () => {
         return <Loading />;
     }
     const approveLeaves = leaves.filter((leave) => {
-        leave.status === 'APPROVED';
+        return leave.status === 'APPROVED';
     });
     const skinCount = approveLeaves.filter((leave) => {
-        leave.type === 'SICK';
+        return leave.type === 'SICK';
     }).length;
     const causalCount = approveLeaves.filter((leave) => {
-        leave.type === 'CAUSAL';
+        return leave.type === 'CAUSAL';
     }).length;
     const annualCount = approveLeaves.filter((leave) => {
-        leave.type === 'ANNUAL';
+        return leave.type === 'ANNUAL';
     }).length;
 
     const leaveStates = [
