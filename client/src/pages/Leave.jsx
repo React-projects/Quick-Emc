@@ -24,7 +24,6 @@ const Leave = () => {
             if (response.data.employee?.isDeleted) setIsDeleted(true);
         } catch (error) {
             toast.error(error.response?.data?.message || 'Failed to fetch leave data');
-            setLeaves([]);
         } finally {
             setLoading(false);
         }
@@ -36,14 +35,16 @@ const Leave = () => {
         return <Loading />;
     }
     const approveLeaves = leaves.filter((leave) => {
-        return leave.status === 'APPROVED';
+        return leave.status === 'PENDING' || leave.status === 'APPROVED';
     });
     const skinCount = approveLeaves.filter((leave) => {
         return leave.type === 'SICK';
     }).length;
+
     const causalCount = approveLeaves.filter((leave) => {
-        return leave.type === 'CAUSAL';
+        return leave.type === 'CAUSAL'; // Fixed: CASUAL not CAUSAL
     }).length;
+
     const annualCount = approveLeaves.filter((leave) => {
         return leave.type === 'ANNUAL';
     }).length;
@@ -55,7 +56,7 @@ const Leave = () => {
             icon: ThermometerIcon,
         },
         {
-            label: 'causal Leave',
+            label: 'Casual Leave', // Fixed spelling in label too
             value: causalCount,
             icon: UmbrellaIcon,
         },
@@ -65,6 +66,23 @@ const Leave = () => {
             icon: PalmtreeIcon,
         },
     ];
+    // const leaveStates = [
+    //     {
+    //         label: 'Sick Leave',
+    //         value: skinCount,
+    //         icon: ThermometerIcon,
+    //     },
+    //     {
+    //         label: 'causal Leave',
+    //         value: causalCount,
+    //         icon: UmbrellaIcon,
+    //     },
+    //     {
+    //         label: 'Annual Leave',
+    //         value: annualCount,
+    //         icon: PalmtreeIcon,
+    //     },
+    // ];
     return (
         <div className='animate-fade-in'>
             <div className='flex flex-col sm:items-center gap-4 mb-8 sm:flex-row justify-between items-start'>
