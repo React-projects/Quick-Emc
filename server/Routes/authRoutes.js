@@ -5,6 +5,6 @@ const authRouter = Router();
 
 authRouter.post('/login', login);
 authRouter.get('/session', protect, getSession);
-authRouter.post('/changePassword', protect, changePassword);
+authRouter.post('/change-password', protect, changePassword);
 
 export default authRouter;

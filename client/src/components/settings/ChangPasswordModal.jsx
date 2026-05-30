@@ -1,11 +1,29 @@
 import { Loader2Icon, LockIcon, X } from 'lucide-react';
 import { useState } from 'react';
+import api from '../../api/axios';
+import toast from 'react-hot-toast';
 
 function ChangPasswordModal({ open, onClose }) {
     const [loading, setLoading] = useState(false);
     const [massage, setMassage] = useState({ type: '', text: '' });
     const handelSubmit = async (e) => {
         e.preventDefault();
+        setLoading(true);
+        setMassage({ type: '', text: '' });
+        const formData = new FormData(e.currentTarget);
+        const currentPassword = formData.get('currentPassword');
+        const newPassword = formData.get('newPassword');
+        try {
+            const { data } = await api.post('/auth/change-password', { currentPassword, newPassword });
+            if (data?.message) {
+                onClose();
+                toast.success('Password changed successfully');
+            }
+        } catch (error) {
+            toast.error(error.response?.data?.message || error.message || 'Failed to change password');
+        } finally {
+            setLoading(false);
+        }
     };
     if (!open) return null;
     return (
@@ -61,7 +79,7 @@ function ChangPasswordModal({ open, onClose }) {
                             <button onClick={onClose} type='button' className='btn-secondary flex-1'>
                                 cancel
                             </button>
-                            <button onClick={handelSubmit} disabled={loading} type='submit' className='flex-1 btn-primary flex items-center justify-center gap-2'>
+                            <button disabled={loading} type='submit' className='flex-1 btn-primary flex items-center justify-center gap-2'>
                                 {loading && <Loader2Icon className='w-4 h-4 animate-spin' />}
                                 Update Password
                             </button>

@@ -4,20 +4,30 @@ import Loading from '../components/layout/Loading';
 import { Lock } from 'lucide-react';
 import ProfileForm from '../components/settings/ProfileForm';
 import ChangPasswordModal from '../components/settings/ChangPasswordModal';
+import api from '../api/axios';
+import toast from 'react-hot-toast';
+import { useAuth } from '../context/AuthContext';
 
 const Setting = () => {
+    const { user } = useAuth();
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
     const [showPasswordModal, setShowPasswordModal] = useState(false);
     const fetchProfile = async () => {
-        setProfile(dummyProfileData);
-        setTimeout(() => {
+        try {
+            setLoading(true);
+            const response = await api.get('/profile');
+            const profile = response.data;
+            if (profile) setProfile(profile);
+        } catch (error) {
+            toast.error(error.response?.data?.message || error.message || 'Failed to fetch profile');
+        } finally {
             setLoading(false);
-        }, 1000);
+        }
     };
     useEffect(() => {
         fetchProfile();
-    }, []);
+    }, [user]);
     if (loading) return <Loading />;
 
     return (
@@ -28,7 +38,7 @@ const Setting = () => {
                     <p className='page-subtitle'>Manage your Account and Preferences</p>
                 </div>
             </div>
-            {profile && <ProfileForm initialDate={profile} onSucess={fetchProfile} />}
+            {profile && <ProfileForm initialDate={profile} onSuccess={fetchProfile} />}
             {/* Change password Trigger */}
             <div className=' card max-w-md p-6 flex items-center justify-between'>
                 <div className='flex items-center gap-3'>
