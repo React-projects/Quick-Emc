@@ -31,9 +31,8 @@ export const getPayslips = async (req, res) => {
         const isAdmin = session.role === 'ADMIN';
         if (isAdmin) {
             const payslips = await Payslips.find().populate('employeeId').sort({ createAt: -1 });
-            return res.json({ success: true, data: payslips });
             const data = payslips.map((payslip) => {
-                const obj = payslips.toObject();
+                const obj = payslip.toObject();
                 return {
                     ...obj,
                     id: obj._id.toString(),
@@ -41,7 +40,7 @@ export const getPayslips = async (req, res) => {
                     employeeId: obj.employeeId?._id.toString(),
                 };
             });
-            return res.json(data);
+            return res.json({ success: true, data: data });
         } else {
             const employee = await Employee.findOne({ userId: session.userId });
             if (!employee) {
@@ -58,7 +57,7 @@ export const getPayslips = async (req, res) => {
 // get /api/payslips:id
 export const getPayslipsById = async (req, res) => {
     try {
-        const payslips = await Payslips.findById(req.params.id).populate(employeeId).lean();
+        const payslips = await Payslips.findById(req.params.id).populate('employeeId').lean();
         if (!payslips) {
             return res.status(404).json({ message: 'payslips not found' });
         }
