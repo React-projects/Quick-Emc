@@ -5,9 +5,10 @@ import leaveApplication from '../models/leaveApplication.js';
 import sendEmail from '../config/nodeMailer.js';
 
 // Create a client to send and receive events
-export const inngest = new Inngest({ id: 'fullstack-emss',
-                                    // isDev: process.env.INNGEST_DEV === '1'
-                                    });
+export const inngest = new Inngest({
+    id: 'fullstack-emss',
+    // isDev: process.env.INNGEST_DEV === '1'
+});
 // Auto check out for employees
 const autoCheckOut = inngest.createFunction({ id: 'auto-check-out', triggers: [{ event: 'employee/check-out' }] }, async ({ event, step }) => {
     const { employeeId, attendanceId } = event.data;
@@ -76,78 +77,113 @@ const leaveApplicationReminder = inngest.createFunction({ id: 'leave-application
 });
 // Cron: Check at 11:30 AM IST (06:00 UTC) and email absent employees
 
-const attendanceReminderCron = inngest.createFunction(
-    { id: 'attendance-reminder-cron', triggers: [{ cron: '0 7 * * *' }] }, // 06:00 UTC = 11:30 AM IST
-    async ({ step }) => {
-        // Step 1: Get today's date range (1ST)
-        const today = await step.run("get-today's-date-range", () => {
-            const startUTC = new Date(new Date().toLocaleDateString('en-US', { timeZone: 'Africa/Cairo' }) + 'T00:00:00+02:00');
-            const endUTC = new Date(new Date(startUTC.getTime() + 24 * 60 * 60 * 1000));
-            return { startUTC: startUTC.toISOString(), endUTC: endUTC.toISOString() };
-        });
-        // Step 2: Get all active non-deleted employees
-        const activeEmployees = await step.run('get-all-active-employees', async () => {
-            const employees = await Employee.find({ isDeleted: false, employeeStatus: 'ACTIVE' }).lean();
-            return employees.map((employee) => {
-                _id: employee._id.toISOString();
-                firstName: employee.firstName;
-                lastName: employee.lastName;
-                email: employee.email;
-                department: employee.department;
-            });
-        });
-        // step 3: get employees idS  on approve leave today
-        const onLeavesIds = await step.run('get-on-leave-ids', async () => {
-            const leaves = await leaveApplication
-                .find({
-                    status: 'APPROVED',
-                    startDate: { $lte: new Date(today.endUTC) },
-                    endDate: { $gte: new Date(today.startUTC) },
-                })
-                .lean();
-            return leaves.map((leave) => leave.employeeId.toString());
-        });
-        //  Step 4: Get employee IDs who already checked in today
-        const CheckedInIds = await step.run('get-checked-in-ids', async () => {
-            const attendancesData = await Attendees.find({
-                date: { $gte: new Date(today.startUTC), $lte: new Date(today.endUTC) },
-            }).lean();
-            return attendancesData.map((attendance) => attendances.employeeId.toString());
-        });
-        // Step 5: Filter absent employees (not on leave & not checked in)
-        const absentEmployees = activeEmployees.filter((employee) => !onLeavesIds.includes(employee._id) && !CheckedInIds.includes(employee._id));
-        // Step 6: send email to absent employees
-        if (absentEmployees.length > 0) {
-            await step.run('send-attendance-reminder-email', async () => {
-                const emailPromises = absentEmployees.map((employee) => {
-                    // send email to employee
+const attendanceReminderCron = inngest.createFunction({ id: 'attendance-reminder-cron', triggers: [{ cron: '0 6 * * *' }] }, async ({ step }) => {
+    // Step 1: Get today's date range
+    const today = await step.run("get-today's-date-range", () => {
+        const now = new Date();
+        const egyptDate = new Date(now.toLocaleString('en-US', { timeZone: 'Africa/Cairo' }));
+
+        const startUTC = new Date(Date.UTC(egyptDate.getFullYear(), egyptDate.getMonth(), egyptDate.getDate(), 0, 0, 0, 0));
+
+        const endUTC = new Date(Date.UTC(egyptDate.getFullYear(), egyptDate.getMonth(), egyptDate.getDate(), 23, 59, 59, 999));
+
+        return {
+            startUTC: startUTC.toISOString(),
+            endUTC: endUTC.toISOString(),
+        };
+    });
+
+    // Step 2: Get all active non-deleted employees
+    const activeEmployees = await step.run('get-all-active-employees', async () => {
+        const employees = await Employee.find({
+            isDeleted: false,
+            employmentStatus: 'Active',
+        }).lean();
+
+        return employees.map((employee) => ({
+            _id: employee._id.toString(),
+            firstName: employee.firstName,
+            lastName: employee.lastName,
+            email: employee.email,
+            department: employee.department,
+        }));
+    });
+
+    // Step 3: Get employees on approved leave today
+    const onLeavesIds = await step.run('get-on-leave-ids', async () => {
+        const leaves = await leaveApplication
+            .find({
+                status: 'APPROVED',
+                startDate: { $lte: new Date(today.endUTC) },
+                endDate: { $gte: new Date(today.startUTC) },
+            })
+            .lean();
+
+        return leaves.map((leave) => leave.employeeId.toString());
+    });
+
+    // Step 4: Get employee IDs who already checked in today
+    const checkedInIds = await step.run('get-checked-in-ids', async () => {
+        const attendancesData = await Attendees.find({
+            date: { $gte: new Date(today.startUTC), $lte: new Date(today.endUTC) },
+        }).lean();
+
+        return attendancesData.map((attendance) => attendance.employeeId.toString());
+    });
+
+    // Step 5: Filter absent employees
+    const absentEmployees = activeEmployees.filter((employee) => !onLeavesIds.includes(employee._id) && !checkedInIds.includes(employee._id));
+
+    // Step 6: Send emails to absent employees
+    let emailResult = { emailSent: 0, error: null };
+
+    if (absentEmployees.length > 0) {
+        emailResult = await step.run('send-attendance-reminder-email', async () => {
+            try {
+                const emailPromises = absentEmployees.map((employee) =>
                     sendEmail({
                         to: employee.email,
                         subject: 'Attendance Reminder - Please Mark Your Attendance',
                         body: `
-                            <div style="max-width: 600px; font-family: Arial, sans-serif;">
-                                <h2>Hi ${employee.firstName}, 👋</h2>
-                                <p style="font-size: 16px;">We noticed you haven't marked your attendance yet today.</p>
-                                <p style="font-size: 16px;">The deadline was <strong>11:30 AM</strong> and your attendance is still missing.</p>
-                                <p style="font-size: 16px;">Please check in as soon as possible or contact your admin if you're facing any issues.</p>
-                                <br />
-                                <p style="font-size: 14px; color: #666;">Department: ${employee.department}</p>
-                                <br />
-                                <p style="font-size: 16px;">Best Regards,</p>
-                                <p style="font-size: 16px;"><strong>QuickEMS</strong></p>
-                            </div>
-                        `,
-                    });
-                });
-            });
-        }
-        return {
-            totalActive: activeEmployees.length,
-            onLeave: onLeavesIds.length,
-            checkedIn: CheckedInIds.length,
-            absent: absentEmployees.length,
-        };
-    },
-);
+                                <div style="max-width: 600px; font-family: Arial, sans-serif;">
+                                    <h2>Hi ${employee.firstName}, 👋</h2>
+                                    <p style="font-size: 16px;">We noticed you haven't marked your attendance yet today.</p>
+                                    <p style="font-size: 16px;">The deadline was <strong> 9:00 AM</strong> and your attendance is still missing.</p>
+                                    <p style="font-size: 16px;">Please check in as soon as possible or contact your admin if you're facing any issues.</p>
+                                    <br />
+                                    <p style="font-size: 14px; color: #666;">Department: ${employee.department}</p>
+                                    <br />
+                                    <p style="font-size: 16px;">Best Regards,</p>
+                                    <p style="font-size: 16px;"><strong>QuickEMS</strong></p>
+                                </div>
+                            `,
+                    }),
+                );
+
+                const results = await Promise.all(emailPromises);
+                const successful = results.filter((r) => r.success).length;
+
+                return {
+                    emailSent: successful,
+                    emailFailed: absentEmployees.length - successful,
+                    error: successful === 0 ? 'All emails failed' : null,
+                };
+            } catch (error) {
+                return { emailSent: 0, error: error.message };
+            }
+        });
+    }
+
+    return {
+        success: true,
+        runTime: new Date().toISOString(),
+        egyptTime: new Date().toLocaleString('en-US', { timeZone: 'Africa/Cairo' }),
+        totalActive: activeEmployees.length,
+        onLeave: onLeavesIds.length,
+        checkedIn: checkedInIds.length,
+        absent: absentEmployees.length,
+        emailsSent: emailResult.emailSent || 0,
+    };
+});
 // Create an empty array where we'll export future Inngest functions
 export const functions = [autoCheckOut, leaveApplicationReminder, attendanceReminderCron];
