@@ -4,6 +4,8 @@ import { Plus, Search, X } from 'lucide-react';
 import Loading from '../components/layout/Loading';
 import EmployeeCard from '../components/empolyee/EmployeeCard';
 import EmployeeForm from '../components/empolyee/EmployeeForm';
+import api from '../api/axios';
+import { useNavigate } from 'react-router-dom';
 
 const Employs = () => {
     const [employs, setEmploys] = useState([]);
@@ -13,11 +15,15 @@ const Employs = () => {
     const [editEmployee, setEditEmployee] = useState(null);
     const [createEmployeeModal, setCreateEmployeeModal] = useState(false);
     const fetchEmploys = useCallback(async () => {
-        setLoading(true);
-        setEmploys(dummyEmployeeData.filter((emp) => !selectedDept || emp.department === selectedDept));
-        setTimeout(() => {
+        try {
+            const url = selectedDept ? `/employees?department=${selectedDept}` : '/employees';
+            const response = await api(url);
+            setEmploys(response.data);
+        } catch (error) {
+            console.error(' failed to get employees', error);
+        } finally {
             setLoading(false);
-        }, 1000);
+        }
     }, [selectedDept]);
 
     useEffect(() => {
@@ -110,7 +116,7 @@ const Employs = () => {
                         </div>
                         <div className='p-6'>
                             <EmployeeForm
-                                onsuccess={() => {
+                                onSuccess={() => {
                                     setCreateEmployeeModal(false);
                                     fetchEmploys();
                                 }}
@@ -148,7 +154,7 @@ const Employs = () => {
                         <div className='p-6'>
                             <EmployeeForm
                                 initialData={editEmployee}
-                                onsuccess={() => {
+                                onSuccess={() => {
                                     setEditEmployee(null);
                                     fetchEmploys();
                                 }}

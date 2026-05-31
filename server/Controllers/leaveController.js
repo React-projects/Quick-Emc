@@ -1,6 +1,6 @@
-import { inngest } from '../inngest/index.js';
+import { inngest } from '../inngest/inngestClient.js';
 import Employee from '../models/Employee.js';
-import leaveApplication from '../models/leaveApplication.js';
+import LeaveApplication from '../models/leaveApplication.js';
 
 //  create a leave
 // post /api/leave
@@ -24,20 +24,38 @@ export const createLeave = async (req, res) => {
         if (new Date(startDate) <= today || new Date(endDate) <= today) {
             return res.status(400).json({ error: 'Start date and end date must be in the future' });
         }
-        if (new Date(endDate) <= new Date(endDate)) {
+        if (new Date(endDate) <= new Date(startDate)) {
             return res.status(400).json({ error: 'End date must be after start date' });
         }
 
-        const leave = await leaveApplication.create({ employeeId: employee._id, type, reason, startDate: new Date(startDate), endDate: new Date(endDate), status: 'PENDING' });
+        const leave = await LeaveApplication.create({
+            employeeId: employee._id,
+            type,
+            reason,
+            startDate: new Date(startDate),
+            endDate: new Date(endDate),
+            status: 'PENDING',
+        });
+
         await inngest.send({
             name: 'leave/pending',
             data: {
                 leaveApplicationId: leave._id,
             },
         });
+
         return res.json({ success: true, data: leave });
     } catch (error) {
-        res.status(500).json({ message: ' failed to create leave' });
+        // Log the actual error
+        console.error('Create leave error:', error);
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+
+        // Return the actual error message
+        return res.status(500).json({
+            message: 'Failed to create leave',
+            error: error.message, // This will show the real issue
+        });
     }
 };
 // get all leaves
@@ -49,14 +67,14 @@ export const getLeaves = async (req, res) => {
         if (isAdmin) {
             const status = req.query.status;
             const where = status ? { status } : {};
-            const leave = await leaveApplication.find(where).populate('employeeId').sort({ createdAt: -1 });
+            const leave = await LeaveApplication.find(where).populate('employeeId').sort({ createdAt: -1 });
             const data = leave.map((leave) => {
                 const obj = leave.toObject();
                 return {
                     ...obj,
                     id: obj._id.toString(),
                     employee: obj.employeeId,
-                    employee: obj.employeeId?._id.toString(),
+                    employeeId: obj.employeeId?._id.toString(),
                 };
             });
             return res.json(data);
@@ -65,10 +83,10 @@ export const getLeaves = async (req, res) => {
             if (!employee) {
                 return res.status(404).json({ message: 'employee not found' });
             }
-            const leave = await leaveApplication.find({ employeeId: employee._id }).sort({ createdAt: -1 });
+            const leave = await LeaveApplication.find({ employeeId: employee._id }).sort({ createdAt: -1 });
 
             return res.json({
-                date: leave,
+                data: leave,
                 employee: { ...employee, id: employee._id.toString() },
             });
         }
@@ -80,11 +98,11 @@ export const getLeaves = async (req, res) => {
 // get /api/leave:id
 export const UpdateLeaveStatus = async (req, res) => {
     try {
-        const { status } = req;
-        if (['APPROVED', 'REJECTED', 'PENDING'].includes(status)) {
+        const { status } = req.body;
+        if (!['APPROVED', 'REJECTED', 'PENDING'].includes(status)) {
             return res.status(400).json({ error: 'Invalid status' });
         }
-        const leave = await leaveApplication.findByIdAndUpdate(req.params.id, { status }, { returnDocument: 'after' });
+        const leave = await LeaveApplication.findByIdAndUpdate(req.params.id, { status }, { returnDocument: 'after' });
         return res.json({ success: true, data: leave });
 
         return res.json({ success: true, data: leave });

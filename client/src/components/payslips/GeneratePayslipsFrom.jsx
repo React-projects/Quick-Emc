@@ -1,9 +1,11 @@
 import { Loader2Icon, Plus, SendIcon, X } from 'lucide-react';
 import { useState } from 'react';
+import api from '../../api/axios';
+import toast from 'react-hot-toast';
 
 const GeneratePayslipsFrom = ({ employees, onSuccess }) => {
     const [isOpen, setIsOpen] = useState(false);
-    const [loading, setIsLoading] = useState(false);
+    const [loading, setLoading] = useState(false);
     if (!isOpen)
         return (
             <button
@@ -17,14 +19,27 @@ const GeneratePayslipsFrom = ({ employees, onSuccess }) => {
         );
     const handleSubmit = async (e) => {
         e.preventDefault();
+        const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData.entries());
+
+        try {
+            setLoading(true);
+            await api.post('/payslips', data);
+            toast.success('Payslip generated successfully!');
+            onSuccess();
+        } catch (error) {
+            toast.error(error.response?.data?.error || 'Failed to generate payslip');
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
         <div
             className='fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 P-4'
-            onClick={() => {
-                setIsOpen(false);
-            }}
+            // onClick={() => {
+            //     setIsOpen(false);
+            // }}
         >
             <div className='card max-w-lg w-full p-6 animate-slide-up'>
                 <div className='flex items-center justify-between mb-6'>
@@ -42,7 +57,7 @@ const GeneratePayslipsFrom = ({ employees, onSuccess }) => {
                     {/* - select Employee - */}
                     <div>
                         <label className='text-sm font-medium text-slate-700 mb-2 block'> Employee</label>
-                        <select name='EmployeeID' required>
+                        <select name='employeeId' required>
                             {employees.map((employee) => (
                                 <option key={employee.id} value={employee.id}>
                                     {employee.firstName} {employee.lastName} ({employee.position})
@@ -55,7 +70,7 @@ const GeneratePayslipsFrom = ({ employees, onSuccess }) => {
                     <div className='grid grid-cols-2 gap-4'>
                         <div>
                             <label className='text-sm font-medium text-slate-700 mb-2 block'> Month</label>
-                            <select name='EmployeeID' required ar>
+                            <select name='month' required ar>
                                 {Array.from({ length: 12 }, (_, i) => (
                                     <option key={i} value={i + 1}>
                                         {new Date(0, i).toLocaleString('default', { month: 'long' })}{' '}
@@ -65,7 +80,7 @@ const GeneratePayslipsFrom = ({ employees, onSuccess }) => {
                         </div>
                         <div>
                             <label className='text-sm font-medium text-slate-700 mb-2 block'> Year</label>
-                            <input type='number' name='Year' defaultValue={new Date().getFullYear()} aria-label=' employee year ' />
+                            <input type='number' name='year' defaultValue={new Date().getFullYear()} aria-label=' employee year ' />
                         </div>
                     </div>
                     {/* - Basic-salary  } */}
@@ -77,11 +92,11 @@ const GeneratePayslipsFrom = ({ employees, onSuccess }) => {
                     <div className='grid grid-cols-2 gap-4'>
                         <div>
                             <label className='text-sm font-medium text-slate-700 mb-2 block'> Allowance </label>
-                            <input type='number' name='allowanceSalary' placeholder='Enter allowance salary' aria-label=' employee allowance Salary' defaultValue={0} />
+                            <input type='number' name='allowances' placeholder='Enter allowance salary' aria-label=' employee allowance Salary' defaultValue={0} />
                         </div>
                         <div>
                             <label className='text-sm font-medium text-slate-700 mb-2 block'> Deduction </label>
-                            <input type='number' name='deductionSalary' placeholder='Enter deduction salary' aria-label=' employee deduction Salary' defaultValue={0} />
+                            <input type='number' name='deductions' placeholder='Enter deduction salary' aria-label=' employee deduction Salary' defaultValue={0} />
                         </div>
                     </div>
 

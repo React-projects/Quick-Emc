@@ -30,8 +30,8 @@ const attendeesSchema = new mongoose.Schema(
         },
         dayType: {
             type: String,
-            enum: ['FULL DAY', 'THERE QUARTER DAY', 'HALF DAY', 'SHORT DAY', 'NULL'],
-            default: 'null',
+            enum: ['FULL DAY', 'THREE QUARTER DAY', 'HALF DAY', 'QUARTER DAY', 'SHORT DAY', null],
+            default: null,
         },
     },
     { timestamps: true },

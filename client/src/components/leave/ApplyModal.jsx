@@ -1,5 +1,7 @@
 import { CalendarDays, FileText, Loader2Icon, SendIcon, X } from 'lucide-react';
 import React, { useState } from 'react';
+import api from '../../api/axios';
+import toast from 'react-hot-toast';
 
 function ApplyModal({ open, onClose, onSuccess }) {
     const [loading, setLoading] = useState(false);
@@ -9,6 +11,19 @@ function ApplyModal({ open, onClose, onSuccess }) {
     const minDate = tomorrow.toISOString().split('T')[0];
     const handelSubmit = async (e) => {
         e.preventDefault();
+        setLoading(true);
+        const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData.entries());
+        try {
+            await api.post('/leave', data);
+            toast.success('Leave application submitted successfully');
+            onSuccess();
+            onClose();
+        } catch (error) {
+            toast.error(error.response?.data?.error || 'Failed to submit leave application');
+        } finally {
+            setLoading(false);
+        }
     };
     if (!open) return null;
     return (
@@ -57,7 +72,7 @@ function ApplyModal({ open, onClose, onSuccess }) {
                             </div>
                             <div>
                                 <span className='block text-xs text-slate-400 mb-1'>To</span>
-                                <input type='date' name='EndDate' required min={minDate} aria-label='duration to duration  ' />
+                                <input type='date' name='endDate' required min={minDate} aria-label='duration to duration  ' />
                             </div>
                         </div>
                     </div>
@@ -68,10 +83,10 @@ function ApplyModal({ open, onClose, onSuccess }) {
                     </div>
                     {/* - buttons - */}
                     <div className='flex gap-2 pt-2'>
-                        <button onClick={onclose} type='button' className='btn-secondary flex-1'>
+                        <button onClick={onClose} type='button' className='btn-secondary flex-1'>
                             cancel
                         </button>
-                        <button onClick={onclose} disabled={loading} type='submit' className='flex-1 btn-primary flex items-center justify-center gap-2'>
+                        <button disabled={loading} type='submit' className='flex-1 btn-primary flex items-center justify-center gap-2'>
                             {loading ? <Loader2Icon className='w-4 h-4 animate-spin' /> : <SendIcon className='w-4 h-4 ' />}
                             {loading ? 'submitting' : 'submit'}
                         </button>

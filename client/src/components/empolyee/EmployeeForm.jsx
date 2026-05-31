@@ -1,13 +1,47 @@
 import { useState } from 'react';
-import { data, useNavigate } from 'react-router-dom';
+import { data, Navigate, useNavigate } from 'react-router-dom';
 import { DEPARTMENTS } from '../../assets/assets';
+import api from '../../api/axios';
+import toast from 'react-hot-toast';
+import { Loader2Icon } from 'lucide-react';
 
-const EmployeeForm = ({ initialData, onsuccess, onCancel }) => {
+const EmployeeForm = ({ initialData, onSuccess, onCancel }) => {
     const navigation = useNavigate();
     const [loading, setLoading] = useState(false);
     const editMode = !!initialData;
     const handleEmployeeSubmit = async (e) => {
         e.preventDefault();
+        setLoading(true);
+        const formData = new FormData(e.currentTarget);
+        if (editMode) {
+            const pwd = formData.get('password');
+            if (!pwd) {
+                formData.delete('password');
+            }
+        }
+        try {
+            const url = editMode ? `/employees/${initialData.id}` : '/employees';
+            const method = editMode ? 'put' : 'post';
+
+            // console.log('Attempting:', method, url);
+            // console.log('FormData entries:', [...formData.entries()]);
+
+            const response = await api[method](url, formData);
+
+            // console.log('Response:', response); // Check if we get here
+            if (editMode) {
+                toast.success('Employee updated successfully!');
+            } else {
+                toast.success('Employee added successfully!');
+            }
+            onSuccess ? onSuccess() : navigation('/employee');
+        } catch (error) {
+            // console.log('Error caught:', error); // Check if error is being caught
+            // console.log('Error response:', error?.response);
+            toast.error(error?.response?.data.message);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -45,7 +79,7 @@ const EmployeeForm = ({ initialData, onsuccess, onCancel }) => {
                     <div className='grid grid-cols-l sm:grid-cols-2 gap-5 text-sm text-slate-700'>
                         <div>
                             <label className='block mb-2'> Department</label>
-                            <select name='Department' defaultValue={initialData?.department || ''}>
+                            <select name='department' defaultValue={initialData?.department || ''}>
                                 <option value=''>All Departments</option>
                                 {DEPARTMENTS.map((dept) => (
                                     <option key={dept.name} value={dept.name}>
@@ -64,11 +98,11 @@ const EmployeeForm = ({ initialData, onsuccess, onCancel }) => {
                         </div>
                         <div>
                             <label className='block mb-2'>Allowances </label>
-                            <input type='number' name='allowances' min='0' step='0.01' aria-label='allowances employee' required defaultValue={initialData?.allowances} />
+                            <input type='number' name='allowances' min='0' step='0.01' aria-label='allowances employee' required defaultValue={initialData?.allowance} />
                         </div>
                         <div>
                             <label className='block mb-2'>Deductions </label>
-                            <input type='number' name='deductions' min='0' step='0.01' aria-label='deductions employee' required defaultValue={initialData?.deductions} />
+                            <input type='number' name='deductions' min='0' step='0.01' aria-label='deductions employee' required defaultValue={initialData?.deduction} />
                         </div>
                         {editMode && (
                             <div>
@@ -88,18 +122,18 @@ const EmployeeForm = ({ initialData, onsuccess, onCancel }) => {
                     <div className='grid grid-cols-1 sm:grid-cols-2 gap-5 text-sm text-slate-700'>
                         <div className='sm:col-span-2'>
                             <label className='block mb-2'>Work Emil</label>
-                            <input type='email' name='work Email' aria-label='Email' required defaultValue={initialData?.email} />
+                            <input type='email' name='email' aria-label='Email' required defaultValue={initialData?.email} />
                         </div>
                         {!editMode && (
                             <div>
-                                <label className='block mb-2'>Tempray password</label>
-                                <input type='password' name='Tempray password' aria-label='Tempray password' required />
+                                <label className='block mb-2'>Temporary password</label>
+                                <input type='password' name='password' aria-label='password' required />
                             </div>
                         )}
                         {editMode && (
                             <div>
                                 <label className='block mb-2'>Change Password (Optional)</label>
-                                <input type='password' name=' password' aria-label=' password' placeholder='leave a plank to keep secret' />
+                                <input type='password' name='password' aria-label='password' placeholder='leave blank to keep current password' />
                             </div>
                         )}
                         <div>
@@ -125,7 +159,7 @@ const EmployeeForm = ({ initialData, onsuccess, onCancel }) => {
                     </button>
                     <button type='Submit' disabled={loading} className='btn-primary flex items-center justify-center'>
                         {editMode ? 'Update Employee' : 'Create Employee'}
-                        {loading && <Loader21con className=' w-4 h-4 mr-2 animate-spin ' />}
+                        {loading && <Loader2Icon className=' w-4 h-4 mr-2 animate-spin ' />}
                     </button>
                 </div>
             </form>

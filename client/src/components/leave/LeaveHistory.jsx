@@ -1,14 +1,24 @@
 import React, { useState } from 'react';
 import { getDayTypeDisplay, getWorkingHoursDisplay } from '../../assets/assets';
 import { format } from 'date-fns';
-import { th } from 'date-fns/locale';
 import { Check, CrossIcon, Loader2Icon, X } from 'lucide-react';
+import toast from 'react-hot-toast';
+import api from '../../api/axios';
 
 function LeaveHistory({ leaves, isAdmin, onUpdate }) {
     const [processing, setProcessing] = useState(null);
 
     const handleStatusUpdate = async (id, status) => {
         setProcessing(id);
+        try {
+            await api.patch(`/leave/${id}`, { status });
+            onUpdate(); // Refresh the leave data after update
+            toast.success('Status updated successfully');
+        } catch (error) {
+            toast.error('Status update error:', error);
+        } finally {
+            setProcessing(null);
+        }
     };
 
     return (
