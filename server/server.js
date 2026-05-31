@@ -32,7 +32,8 @@ app.use('/api/attendance', attendeesRouter);
 app.use('/api/leave', leaveRouter);
 app.use('/api/payslips', payslipsRouter);
 app.use('/api/dashboard', dashboardRouter);
-app.use('/api/inngest', serve({ client: inngest, functions }));
+app.use('/api/inngest', serve({ client: inngest, functions ,    validateSignature: false,
+}));
 
 await connectDB();
 app.listen(port, () => console.log(`Server is running on port ${port}`));
