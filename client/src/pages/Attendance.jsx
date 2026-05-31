@@ -4,6 +4,8 @@ import Loading from '../components/layout/Loading';
 import CheckInButton from '../components/attendance/CheckInButton';
 import AttendanceState from '../components/attendance/AttendanceState';
 import AttendanceHistory from '../components/attendance/AttendanceHistory';
+import toast from 'react-hot-toast';
+import api from '../api/axios';
 
 const Attendance = () => {
     const [history, setHistory] = useState([]);
@@ -11,10 +13,17 @@ const Attendance = () => {
     const [isDeleted, setIsDeleted] = useState(false);
 
     const fetchAttendanceData = useCallback(async () => {
-        setHistory(dummyAttendanceData);
-        setTimeout(() => {
+        try {
+            const response = await api.get('/attendance');
+            // Handle both admin (direct array) and employee (wrapped in .data) responses
+            const attendanceData = Array.isArray(response.data) ? response.data : response.data.data || [];
+            setHistory(attendanceData);
+            if (response.data.employee?.isDeleted) setIsDeleted(true);
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Failed to fetch leave data');
+        } finally {
             setLoading(false);
-        }, 1000);
+        }
     }, []);
     useEffect(() => {
         fetchAttendanceData();
@@ -24,8 +33,9 @@ const Attendance = () => {
     }
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+
     const todayRecord = history.find((r) => {
-        new Date(r.Date).toDateString() === today.toDateString();
+        return new Date(r.date).toDateString() === today.toDateString();
     });
 
     return (

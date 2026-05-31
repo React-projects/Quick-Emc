@@ -5,9 +5,11 @@ import Employee from '../components/dashboard/Employee';
 import Admin from '../components/dashboard/Admin';
 import { toast } from 'react-hot-toast';
 import api from '../api/axios';
+import { useAuth } from '../context/AuthContext';
 const Dashboard = () => {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
+    const { user } = useAuth();
     useEffect(() => {
         // setData(dummyAdminDashboardData);
         // setTimeout(() => {
@@ -32,7 +34,7 @@ const Dashboard = () => {
     if (!data) {
         return <p className='text-center text-slate-500 py-12'>No data available</p>;
     }
-    if (data.role === 'ADMIN') {
+    if (user?.role === 'ADMIN') {
         return (
             <div>
                 <Admin data={data} />

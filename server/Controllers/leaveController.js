@@ -1,4 +1,4 @@
-import { inngest } from '../inngest/index.js';
+import { inngest } from '../inngest/inngestClient.js';
 import Employee from '../models/Employee.js';
 import LeaveApplication from '../models/leaveApplication.js';
 
@@ -37,21 +37,12 @@ export const createLeave = async (req, res) => {
             status: 'PENDING',
         });
 
-        if (process.env.INNGEST_EVENT_KEY) {
-            try {
-                await inngest.send({
-                    name: 'leave/pending',
-                    data: {
-                        leaveApplicationId: leave._id,
-                    },
-                });
-            } catch (inngestError) {
-                console.error('Inngest error (non-fatal):', inngestError.message);
-                // Don't fail the request
-            }
-        } else {
-            console.log('Inngest not configured, skipping event');
-        }
+        await inngest.send({
+            name: 'leave/pending',
+            data: {
+                leaveApplicationId: leave._id,
+            },
+        });
 
         return res.json({ success: true, data: leave });
     } catch (error) {

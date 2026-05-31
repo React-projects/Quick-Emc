@@ -11,7 +11,7 @@ import leaveRouter from './Routes/LeaveRoutes.js';
 import payslipsRouter from './Routes/payslipsRoutes.js';
 import dashboardRouter from './Routes/dashboardRoutes.js';
 import { serve } from 'inngest/express';
-import { inngest, functions } from './inngest/index.js';
+import { inngest, functions } from './inngest/inngestClient.js';
 
 const app = express();
 const port = process.env.PORT || 4000;
@@ -28,14 +28,14 @@ app.get('/', (req, res) => {
 app.use('/api/auth', authRouter);
 app.use('/api/employees', employeeRouter);
 app.use('/api/profile', profileRouter);
-app.use('/api/attendees', attendeesRouter);
+app.use('/api/attendance', attendeesRouter);
 app.use('/api/leave', leaveRouter);
 app.use('/api/payslips', payslipsRouter);
 app.use('/api/dashboard', dashboardRouter);
 app.use('/api/inngest', serve({ client: inngest, functions }));
 
 await connectDB();
-// app.listen(port, () => console.log(`Server is running on port ${port}`));
+app.listen(port, () => console.log(`Server is running on port ${port}`));
 
 // Export app for Vercel
 export default app;

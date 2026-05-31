@@ -5,15 +5,15 @@ import leaveApplication from '../models/leaveApplication.js';
 import sendEmail from '../config/nodeMailer.js';
 
 // Create a client to send and receive events
-export const inngest = new Inngest({ id: 'fullstack-ems' });
+export const inngest = new Inngest({ id: 'fullstack-emss' });
 // Auto check out for employees
-const autoCheckOut = inngest.createFunction({ id: 'auto-check-out', triggers: { event: 'employee/check-out' } }, async ({ event, step }) => {
+const autoCheckOut = inngest.createFunction({ id: 'auto-check-out', triggers: [{ event: 'employee/check-out' }] }, async ({ event, step }) => {
     const { employeeId, attendanceId } = event.data;
     // wait for 9 hours
-    await step.sleepUntil('wait-9-hours', new Date(new Date().getTime() + 9 * 60 * 60 * 1000));
+    await step.sleepUntil('wait-for-the-9-hours', new Date(new Date().getTime() + 9 * 60 * 60 * 1000));
     // get attendance date
-    let attendanceDate = await Attendees.findById(attendanceId);
-    if (!attendanceDate?.checkout) {
+    let attendance = await Attendees.findById(attendanceId);
+    if (!attendance?.checkout) {
         // get employee data
         const employee = await Employee.findById(employeeId);
         // send reminder email
@@ -34,22 +34,22 @@ const autoCheckOut = inngest.createFunction({ id: 'auto-check-out', triggers: { 
             `,
         });
         // After 10 hours, mark attendance as checked out with status "LATE"
-        await step.sleepUntil('wait-10-hours', new Date(new Date().getTime() + 1 * 60 * 60 * 1000));
-        attendanceDate = await Attendees.findById(attendanceId);
-        if (!attendanceDate?.checkout) {
-            attendanceDate.checkout = new Date(attendanceDate.checkIn).getDate() + 4 * 60 * 60 * 1000;
-            attendanceDate.workingHours = 4;
-            attendanceDate.dayType = 'Half Day';
-            attendanceDate.status = 'LATE';
-            await attendanceDate.save();
+        await step.sleepUntil('wait-for-1-hours', new Date(new Date().getTime() + 1 * 60 * 60 * 1000));
+        attendance = await Attendees.findById(attendanceId);
+        if (!attendance?.checkout) {
+            attendance.checkout = new Date(attendanceDate.checkIn).getDate() + 4 * 60 * 60 * 1000;
+            attendance.workingHours = 4;
+            attendance.dayType = 'Half Day';
+            attendance.status = 'LATE';
+            await attendance.save();
         }
     }
 });
 // Send Email to admin, If admin doesn't take action on leave application within 24 hours
-const leaveApplicationReminder = inngest.createFunction({ id: 'leave-application-reminder', triggers: { event: 'leave/pending' } }, async ({ event, step }) => {
+const leaveApplicationReminder = inngest.createFunction({ id: 'leave-application-reminder', triggers: [{ event: 'leave/pending' }] }, async ({ event, step }) => {
     const { leaveApplicationId } = event.data;
     // wait for 24 hours
-    await step.sleepUntil('wait-24-hours', new Date(new Date().getTime() + 24 * 60 * 60 * 1000));
+    await step.sleepUntil('wait-for-24-hours', new Date(new Date().getTime() + 24 * 60 * 60 * 1000));
     // get leave application data
     const leaveApplication = await leaveApplication.findById(leaveApplicationId);
     if (leaveApplication.status === 'PENDING') {
@@ -75,17 +75,17 @@ const leaveApplicationReminder = inngest.createFunction({ id: 'leave-application
 // Cron: Check at 11:30 AM IST (06:00 UTC) and email absent employees
 
 const attendanceReminderCron = inngest.createFunction(
-    { id: 'attendance-reminder-cron', triggers: { cron: '0 0 6 * * *' } }, // 06:00 UTC = 11:30 AM IST
+    { id: 'attendance-reminder-cron', triggers: [{ cron: '0 0 7 * * *' }] }, // 06:00 UTC = 11:30 AM IST
     async ({ step }) => {
         // Step 1: Get today's date range (1ST)
         const today = await step.run("get-today's-date-range", () => {
-            const startUTC = new Date(new Date().toLocaleDateString('en-US', { timeZone: 'asia/kolkata' }) + 'T00:00:00+05:30');
+            const startUTC = new Date(new Date().toLocaleDateString('en-US', { timeZone: 'Africa/Cairo' }) + 'T00:00:00+02:00');
             const endUTC = new Date(new Date(startUTC.getTime() + 24 * 60 * 60 * 1000));
             return { startUTC: startUTC.toISOString(), endUTC: endUTC.toISOString() };
         });
         // Step 2: Get all active non-deleted employees
         const activeEmployees = await step.run('get-all-active-employees', async () => {
-            const employees = await Employee.find({ isDeleted: false, employeeStatus: 'Active' }).lean();
+            const employees = await Employee.find({ isDeleted: false, employeeStatus: 'ACTIVE' }).lean();
             return employees.map((employee) => {
                 _id: employee._id.toISOString();
                 firstName: employee.firstName;
@@ -94,7 +94,7 @@ const attendanceReminderCron = inngest.createFunction(
                 department: employee.department;
             });
         });
-        // step 3: get employees idS  on approve  leave today
+        // step 3: get employees idS  on approve leave today
         const onLeavesIds = await step.run('get-on-leave-ids', async () => {
             const leaves = await leaveApplication
                 .find({
@@ -107,10 +107,10 @@ const attendanceReminderCron = inngest.createFunction(
         });
         //  Step 4: Get employee IDs who already checked in today
         const CheckedInIds = await step.run('get-checked-in-ids', async () => {
-            const attendances = await Attendees.find({
+            const attendancesData = await Attendees.find({
                 date: { $gte: new Date(today.startUTC), $lte: new Date(today.endUTC) },
             }).lean();
-            return attendances.map((attendance) => attendances.employeeId.toString());
+            return attendancesData.map((attendance) => attendances.employeeId.toString());
         });
         // Step 5: Filter absent employees (not on leave & not checked in)
         const absentEmployees = activeEmployees.filter((employee) => !onLeavesIds.includes(employee._id) && !CheckedInIds.includes(employee._id));
@@ -140,8 +140,8 @@ const attendanceReminderCron = inngest.createFunction(
             });
         }
         return {
-            totalActiveEmployees: activeEmployees.length,
-            onLeaves: onLeavesIds.length,
+            totalActive: activeEmployees.length,
+            onLeave: onLeavesIds.length,
             checkedIn: CheckedInIds.length,
             absent: absentEmployees.length,
         };

@@ -34,11 +34,11 @@ function AttendanceHistory({ history }) {
                                     <tr key={record._id || record.id}>
                                         <td className='px-6 py-4 text-slate-900 font-medium'>{format(new Date(record.date), 'MMM dd,yyyy')}</td>
                                         <td className='px-6 py-4 text-slate-900 font-medium'>{record.checkIn ? format(new Date(record.checkIn), 'hh:mm a') : '_'}</td>
-                                        <td className='px-6 py-4 text-slate-900 font-medium'>{record.checkOut ? format(new Date(record.checkOut), 'hh:mm a') : '_'}</td>
+                                        <td className='px-6 py-4 text-slate-900 font-medium'>{record.checkout ? format(new Date(record.checkout), 'hh:mm a') : '_'}</td>
                                         <td className='px-6 py-4 text-slate-600 font-medium'>{getWorkingHoursDisplay(record)}</td>
                                         <td className='px-6 py-4'>{dateType.label !== '_' ? <span className={`badge ${dateType.className}`}> {dateType.label}</span> : '_'}</td>
                                         <td className='px-6 py-4'>
-                                            <span className={` badge ${record.status === 'PRESENT' ? 'badge-success' : badge.status === 'LATE' ? 'badge-warning' : 'badge-danger'}`}>
+                                            <span className={`badge ${record.status === 'PRESENT' ? 'badge-success' : record.status === 'LATE' ? 'badge-warning' : 'badge-danger'}`}>
                                                 {record.status}
                                             </span>
                                         </td>
