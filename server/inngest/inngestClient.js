@@ -5,7 +5,7 @@ import leaveApplication from '../models/leaveApplication.js';
 import sendEmail from '../config/nodeMailer.js';
 
 // Create a client to send and receive events
-export const inngest = new Inngest({ id: 'fullstack-emss' });
+export const inngest = new Inngest({ id: 'fullstack-emss',isDev: process.env.INNGEST_DEV === '1' });
 // Auto check out for employees
 const autoCheckOut = inngest.createFunction({ id: 'auto-check-out', triggers: [{ event: 'employee/check-out' }] }, async ({ event, step }) => {
     const { employeeId, attendanceId } = event.data;
@@ -75,7 +75,7 @@ const leaveApplicationReminder = inngest.createFunction({ id: 'leave-application
 // Cron: Check at 11:30 AM IST (06:00 UTC) and email absent employees
 
 const attendanceReminderCron = inngest.createFunction(
-    { id: 'attendance-reminder-cron', triggers: [{ cron: '0 0 7 * * *' }] }, // 06:00 UTC = 11:30 AM IST
+    { id: 'attendance-reminder-cron', triggers: [{ cron: '0 7 * * *' }] }, // 06:00 UTC = 11:30 AM IST
     async ({ step }) => {
         // Step 1: Get today's date range (1ST)
         const today = await step.run("get-today's-date-range", () => {
