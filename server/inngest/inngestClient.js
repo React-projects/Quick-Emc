@@ -5,7 +5,9 @@ import leaveApplication from '../models/leaveApplication.js';
 import sendEmail from '../config/nodeMailer.js';
 
 // Create a client to send and receive events
-export const inngest = new Inngest({ id: 'fullstack-emss',isDev: process.env.INNGEST_DEV === '1' });
+export const inngest = new Inngest({ id: 'fullstack-emss',
+                                    // isDev: process.env.INNGEST_DEV === '1'
+                                    });
 // Auto check out for employees
 const autoCheckOut = inngest.createFunction({ id: 'auto-check-out', triggers: [{ event: 'employee/check-out' }] }, async ({ event, step }) => {
     const { employeeId, attendanceId } = event.data;
