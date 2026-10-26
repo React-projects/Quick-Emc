@@ -6,8 +6,8 @@ import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 
 const LoginForm = ({ role, title, subtitle }) => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+    const [email, setEmail] = useState('admin@example.com');
+    const [password, setPassword] = useState('admin123');
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
